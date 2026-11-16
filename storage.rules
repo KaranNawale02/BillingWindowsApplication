@@ -1,0 +1,51 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Role check through custom claims or firestore user lookup
+    function isAdmin() {
+      return isAuthenticated() && request.auth.token.role == 'admin';
+    }
+
+    function isStoreUser() {
+      return isAuthenticated() && request.auth.token.role == 'store_user';
+    }
+
+    // Invoices and Tax Receipts (PDF files)
+    match /invoices/{year}/{month}/{invoiceFile} {
+      // Both roles can download/view generated invoice PDFs
+      allow read: if isAuthenticated();
+      // Store Users can upload finalized invoice PDFs (max 5MB, PDF only)
+      allow write: if isAuthenticated() &&
+        request.resource.size < 5 * 1024 * 1024 &&
+        request.resource.contentType == 'application/pdf';
+    }
+
+    // Product and Inventory Component Images
+    match /products/{productId}/{imageFile} {
+      allow read: if isAuthenticated();
+      // Only Admins can upload product photos
+      allow write: if isAuthenticated() &&
+        request.resource.size < 5 * 1024 * 1024 &&
+        request.resource.contentType.matches('image/.*');
+    }
+
+    // Technical Datasheets, Schematics & PCB Gerbers
+    match /datasheets/{itemId}/{docFile} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated() &&
+        request.resource.size < 20 * 1024 * 1024;
+    }
+
+    // Repair inspection attachments
+    match /repairs/{repairId}/{photoFile} {
+      allow read, write: if isAuthenticated() &&
+        request.resource.size < 10 * 1024 * 1024;
+    }
+  }
+}

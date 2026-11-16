@@ -1,0 +1,198 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 221.2 83.2% 53.3%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 221.2 83.2% 53.3%;
+    --radius: 0.5rem;
+    --sidebar-background: 222.2 84% 4.9%;
+    --sidebar-foreground: 210 40% 98%;
+    --sidebar-primary: 221.2 83.2% 53.3%;
+    --sidebar-primary-foreground: 210 40% 98%;
+    --sidebar-accent: 217.2 32.6% 17.5%;
+    --sidebar-accent-foreground: 210 40% 98%;
+    --sidebar-border: 217.2 32.6% 17.5%;
+    --sidebar-ring: 221.2 83.2% 53.3%;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 217.2 91.2% 59.8%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 224.3 76.3% 48%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground font-sans;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+  /* Prevent text selection on UI chrome elements */
+  .no-select {
+    user-select: none;
+  }
+}
+
+@layer components {
+  /* Sidebar styles */
+  .sidebar-item {
+    @apply flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors cursor-pointer;
+    @apply text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground;
+  }
+  .sidebar-item.active {
+    @apply bg-sidebar-accent text-sidebar-accent-foreground;
+  }
+  .sidebar-item-group-label {
+    @apply px-3 py-1 text-xs font-semibold uppercase tracking-wider text-sidebar-foreground/40 mt-4;
+  }
+
+  /* Data table styles */
+  .data-table {
+    @apply w-full border-collapse;
+  }
+  .data-table th {
+    @apply text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground px-4 py-3 border-b bg-muted/50;
+  }
+  .data-table td {
+    @apply px-4 py-3 text-sm border-b border-border/50;
+  }
+  .data-table tr:hover td {
+    @apply bg-muted/30;
+  }
+
+  /* Status badge variants */
+  .badge-success { @apply bg-emerald-100 text-emerald-700 border-emerald-200; }
+  .badge-warning { @apply bg-amber-100 text-amber-700 border-amber-200; }
+  .badge-danger  { @apply bg-red-100 text-red-700 border-red-200; }
+  .badge-info    { @apply bg-blue-100 text-blue-700 border-blue-200; }
+  .badge-muted   { @apply bg-gray-100 text-gray-600 border-gray-200; }
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: hsl(var(--border)); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: hsl(var(--muted-foreground) / 0.5); }
+
+/* Print styles for Exact A4 Page Tax Invoice */
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 8mm 10mm;
+  }
+
+  html, body {
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #ffffff !important;
+    color: #000000 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    overflow: visible !important;
+    height: auto !important;
+  }
+
+  /* Hide common non-printable UI elements */
+  .no-print,
+  .print\:hidden,
+  button,
+  header,
+  nav,
+  aside {
+    display: none !important;
+  }
+
+  /* Neutralize modal wrapper and backdrops */
+  .fixed,
+  [class*="fixed"] {
+    position: static !important;
+    display: block !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    background: transparent !important;
+  }
+
+  [class*="backdrop-blur"],
+  [class*="bg-background/80"] {
+    display: none !important;
+  }
+
+  /* Neutralize modal dialog container: unconstrain height, width, overflow */
+  [class*="max-w-lg"],
+  [class*="max-w-4xl"],
+  [class*="max-h-"],
+  [class*="overflow-y-auto"],
+  [class*="overflow-hidden"],
+  [class*="animate-in"] {
+    position: static !important;
+    max-width: 100% !important;
+    max-height: none !important;
+    height: auto !important;
+    overflow: visible !important;
+    box-shadow: none !important;
+    border: none !important;
+    background: transparent !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    transform: none !important;
+    animation: none !important;
+  }
+
+  #printable-tax-invoice-area {
+    display: block !important;
+    width: 100% !important;
+    max-width: 190mm !important;
+    margin: 0 auto !important;
+    padding: 0 !important;
+    page-break-after: avoid !important;
+    page-break-before: avoid !important;
+  }
+
+  .invoice-a4-page {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    box-shadow: none !important;
+    border: 2px solid #111827 !important;
+    background: #ffffff !important;
+  }
+}

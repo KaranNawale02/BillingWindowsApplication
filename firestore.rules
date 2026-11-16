@@ -1,0 +1,91 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // =========================================================================
+    // INVENTORY ITEMS & RAW COMPONENTS
+    // Dedicated collection for inventory items, parts, and spares
+    // =========================================================================
+    match /inventory_items/{itemId} {
+      allow read, write: if isAuthenticated();
+    }
+    match /inventory_components/{itemId} {
+      allow read, write: if isAuthenticated();
+    }
+
+    // =========================================================================
+    // FINISHED PRODUCTS CATALOG
+    // Products catalog for finished goods
+    // =========================================================================
+    match /finished_products/{productId} {
+      allow read, write: if isAuthenticated();
+    }
+    match /products/{productId} {
+      allow read, write: if isAuthenticated();
+    }
+
+    // =========================================================================
+    // BILL OF MATERIALS (BOM)
+    // Recipes linking finished products to inventory items
+    // =========================================================================
+    match /product_boms/{bomId} {
+      allow read, write: if isAuthenticated();
+    }
+
+    // =========================================================================
+    // PRODUCTION BATCHES & TRANSACTIONS
+    // =========================================================================
+    match /production_batches/{batchId} {
+      allow read, write: if isAuthenticated();
+    }
+    match /production_transactions/{txId} {
+      allow read, write: if isAuthenticated();
+    }
+
+    // =========================================================================
+    // INVOICES & POS BILLING
+    // =========================================================================
+    match /invoices/{invoiceId} {
+      allow read, write: if isAuthenticated();
+    }
+
+    // =========================================================================
+    // CUSTOMERS DIRECTORY
+    // =========================================================================
+    match /customers/{customerId} {
+      allow read, write: if isAuthenticated();
+    }
+
+    // =========================================================================
+    // STOCK MOVEMENTS & ADJUSTMENTS (LEDGERS)
+    // =========================================================================
+    match /stock_movements/{movementId} {
+      allow read, write: if isAuthenticated();
+    }
+    match /stock_adjustments/{adjustmentId} {
+      allow read, write: if isAuthenticated();
+    }
+
+    // =========================================================================
+    // USER PROFILES
+    // =========================================================================
+    match /users/{userId} {
+      allow read, write: if isAuthenticated();
+    }
+
+    // =========================================================================
+    // APPLICATION SETTINGS & AUDIT LOGS
+    // =========================================================================
+    match /application_settings/{settingId} {
+      allow read, write: if isAuthenticated();
+    }
+    match /audit_logs/{logId} {
+      allow read, write: if isAuthenticated();
+    }
+  }
+}
