@@ -70,6 +70,91 @@ export async function getInvoices(): Promise<Invoice[]> {
   return getStoredInvoices();
 }
 
+/** Update an existing invoice (e.g. for partially paid bills: record payment, update balance or customer details) */
+export async function updateInvoice(
+  invoiceId: string,
+  updates: {
+    customerName?: string;
+    customerMobile?: string;
+    customerAddress?: string;
+    customerGstin?: string;
+    amountPaid?: number;
+    balanceDue?: number;
+    paymentMethod?: PaymentMethod;
+    paymentStatus?: PaymentStatus;
+    items?: InvoiceItem[];
+    subtotal?: number;
+    totalGst?: number;
+    totalDiscount?: number;
+    grandTotal?: number;
+    notes?: string;
+  }
+): Promise<Invoice> {
+  if (updates.customerName !== undefined && !updates.customerName.trim()) {
+    throw new Error('Customer name is compulsory.');
+  }
+
+  // 1. Update in local storage
+  const stored = getStoredInvoices();
+  const index = stored.findIndex((inv) => inv.id === invoiceId || inv.invoiceNumber === invoiceId);
+  let updatedInvoice: Invoice;
+
+  if (index !== -1) {
+    updatedInvoice = {
+      ...stored[index],
+      ...updates,
+      customerName: updates.customerName !== undefined ? updates.customerName.trim() : stored[index].customerName,
+      updatedAt: new Date() as any,
+    };
+    stored[index] = updatedInvoice;
+    saveStoredInvoices(stored);
+  } else {
+    updatedInvoice = {
+      id: invoiceId,
+      ...updates,
+    } as any;
+  }
+
+  // 2. Update in Firestore if configured
+  if (isFirebaseConfigured() && db) {
+    try {
+      const invRef = doc(db, COLLECTIONS.INVOICES, invoiceId);
+      const cleanData: any = {};
+      if (updates.customerName !== undefined) cleanData.customerName = updates.customerName.trim();
+      if (updates.customerMobile !== undefined) cleanData.customerMobile = updates.customerMobile;
+      if (updates.customerAddress !== undefined) cleanData.customerAddress = updates.customerAddress;
+      if (updates.customerGstin !== undefined) cleanData.customerGstin = updates.customerGstin;
+      if (updates.amountPaid !== undefined) cleanData.amountPaid = Number(updates.amountPaid);
+      if (updates.balanceDue !== undefined) cleanData.balanceDue = Number(updates.balanceDue);
+      if (updates.paymentMethod !== undefined) cleanData.paymentMethod = updates.paymentMethod;
+      if (updates.paymentStatus !== undefined) cleanData.paymentStatus = updates.paymentStatus;
+      if (updates.items !== undefined) cleanData.items = updates.items;
+      if (updates.subtotal !== undefined) cleanData.subtotal = Number(updates.subtotal);
+      if (updates.totalGst !== undefined) cleanData.totalGst = Number(updates.totalGst);
+      if (updates.totalDiscount !== undefined) cleanData.totalDiscount = Number(updates.totalDiscount);
+      if (updates.grandTotal !== undefined) cleanData.grandTotal = Number(updates.grandTotal);
+      if (updates.notes !== undefined) cleanData.notes = updates.notes;
+      cleanData.updatedAt = serverTimestamp();
+
+      await updateDoc(invRef, cleanData);
+    } catch (err) {
+      console.warn('[BillingService] Failed to update invoice in Firestore:', err);
+    }
+  }
+
+  // 3. Write audit log
+  try {
+    await writeAuditLog({
+      action: 'INVOICE_GENERATE',
+      entity: 'INVOICE',
+      entityId: invoiceId,
+      details: `Updated invoice #${updatedInvoice.invoiceNumber || invoiceId}: Customer ${updatedInvoice.customerName}, Paid: ₹${updatedInvoice.amountPaid}, Balance: ₹${updatedInvoice.balanceDue}`,
+    });
+  } catch (_) {}
+
+  return updatedInvoice;
+}
+
 /** Calculate cart totals */
 export function calculateCartTotals(
   cartItems: CartItem[],
